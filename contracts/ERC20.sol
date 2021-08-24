@@ -1,4 +1,7 @@
- // SPDX-License-Identifier: MIT
+  // SPDX-License-Identifier: MIT
+  // Name: Hafiz Sayyed Ali Hamdani
+//Roll No: PIAIC68636
+// BCC Assignment 2
  pragma solidity ^0.8.0;
 interface IERC20{
     function totalSupply() external view returns(uint256);
@@ -18,7 +21,7 @@ interface IERC20{
 contract ERC20 is IERC20{
     mapping (address=>uint256) private _balances;
     mapping (address=>mapping(address=>uint256)) private _allowances;
-    
+
     uint256 private _totalSupply;
     address public owner;
     
@@ -26,7 +29,22 @@ contract ERC20 is IERC20{
     string public symbol;
     uint256 public decimals;
      uint256 private immutable _cap;
-    constructor() public {
+     // beneficiary of tokens after they are released
+    address private immutable _beneficiary;
+// timestamp when token release is enabled
+    uint256 private immutable _releaseTime;
+    uint256 private immutable _amount;
+     
+    constructor(
+        uint256 amount_,
+        address beneficiary_,
+        uint256 releaseTime_
+        
+    ) {
+        require(releaseTime_+block.timestamp > block.timestamp, "TokenTimelock: release time is before current time");
+        _amount = amount_;
+        _beneficiary = beneficiary_;
+        _releaseTime =(block.timestamp + releaseTime_);
         name="Token made by Hafiz Sayyed Ali Hamdani";
         symbol="SAH";
         decimals=18;
@@ -34,6 +52,7 @@ contract ERC20 is IERC20{
         _totalSupply=50*10**decimals;
         _balances[owner]= _totalSupply;
         _cap = 55*10**decimals;
+        
         emit Transfer(address(this),owner,_totalSupply);
     }
     
@@ -87,9 +106,43 @@ contract ERC20 is IERC20{
        function cap() public view virtual returns (uint256) {
         return _cap;
     }
-    function _mint(uint256 amount) public{
+    function Generate_Token(uint256 amount) public{
         require(msg.sender==owner,"Only owner can generate token");
         require(_totalSupply + amount <= cap(), "ERC20Capped: cap exceeded");
         _totalSupply=_totalSupply+amount;
     }
+    function beneficiary() public view virtual returns (address) {
+        return _beneficiary;
+    }
+    function Amount() public view virtual returns (uint256) {
+        return _amount;
+    }
+
+    /**
+     * @return the time when the tokens are released.
+     */
+    function releaseTime() public view virtual returns (uint256) {
+        return _releaseTime;
+    }/**
+     * @notice Transfers tokens held by timelock to beneficiary.
+     */
+    function release() public virtual {
+        require(block.timestamp >= releaseTime(), "TokenTimelock: current time is before release time");
+        require(_amount > 0, "TokenTimelock: no tokens to release");
+        transfer(beneficiary(), _amount);
+    }
 }
+
+//    Replacing 'ERC20'
+//    -----------------
+//    > transaction hash:    0x64f7d437a41d22bd0fcac3a81bc374eb8a8ce2dd27a119792fb15f21abad57d5
+//    > Blocks: 2            Seconds: 21
+//    > contract address:    0x2Be0F69b447D2FD95E314E2c0De32eDcD9C4f542
+//    > block number:        10899936
+//    > block timestamp:     1629806764
+//    > account:             0x39602393131d0732C6ABF4dcd90390dE0DCe3c03
+//    > balance:             4.484388688098947601
+//    > gas used:            1583296 (0x1828c0)
+//    > gas price:           1.500000018 gwei
+//    > value sent:          0 ETH
+//    > total cost:          0.002374944028499328 ETH 
