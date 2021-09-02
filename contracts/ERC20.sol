@@ -1,7 +1,7 @@
   // SPDX-License-Identifier: MIT
   // Name: Hafiz Sayyed Ali Hamdani
 //Roll No: PIAIC68636
-// BCC Assignment 2
+// BCC Assignment 3B
  pragma solidity ^0.8.0;
 interface IERC20{
     function totalSupply() external view returns(uint256);
