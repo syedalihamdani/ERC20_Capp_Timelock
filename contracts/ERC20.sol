@@ -103,6 +103,34 @@ contract ERC20 is IERC20{
          return true;
            
        }
+         // 1 wei=100 Token 
+    uint256 public wei_equals=100;
+    address public Price_Manager;
+    
+    // There should be an additional method to adjust the price that allows the owner to adjust the price.
+    function set_token_Price(uint256 _wei_equals) external returns(uint256){
+        require(msg.sender==owner || msg.sender==Price_Manager,"Only owner can set the price");
+        wei_equals=_wei_equals;
+        return wei_equals;
+    }
+    // . Anyone can get the token by paying against ether
+     function Buy_token() public payable returns(bool){
+         address buyer=msg.sender;
+         uint256 amount=msg.value*wei_equals;
+         require(buyer!=address(0),"address should not be 0");
+         require(msg.value!=0,"Pay amount to buy ether");
+         require(_balances[owner]>amount,"transfer amount execdes balances");
+         
+         _balances[owner]=_balances[owner]-amount;
+         
+         _balances[buyer]=_balances[buyer]+amount;
+         
+         emit Transfer(owner,buyer,amount);
+         return true;
+     }
+    //   Add fallback payable method to Issue token based on Ether received. Say 1 Ether = 100 tokens.
+    fallback() external payable{
+        }
        function cap() public view virtual returns (uint256) {
         return _cap;
     }
